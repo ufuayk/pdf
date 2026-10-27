@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>pdf-show — Present PDFs like slides</title>
+<meta name="description" content="Present 16:9 PDFs like a real slideshow: click to advance, fullscreen, smooth transitions. Free, open source, ad-free. Your file never leaves your browser.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main id="home" class="home">
+  <nav class="nav">
+    <span class="brand"><svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true"><rect width="64" height="64" rx="15" fill="currentColor"/><rect x="11" y="20" width="42" height="24" rx="4" fill="none" stroke="var(--bg)" stroke-width="4"/><path d="M29 27l9 5-9 5z" fill="var(--bg)"/></svg>pdf&#8209;show</span>
+    <span class="nav-right">
+      <a class="nav-link" href="https://github.com/ufuayk/pdf" target="_blank" rel="noopener">GitHub</a>
+      <button class="lang" id="lang" type="button" aria-label="Language">Türkçe</button>
+    </span>
+  </nav>
+
+  <section class="hero">
+    <h1 data-i18n="heroTitle">Present PDFs like slides.</h1>
+    <p data-i18n="heroSub">Drop a 16:9 PDF. It goes fullscreen and plays like a real slideshow: click to advance, smooth transitions, nothing to install.</p>
+  </section>
+
+  <label id="drop" class="drop" for="file" tabindex="0">
+    <span class="drop-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="52" height="52" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="36" height="22" rx="4"/><path d="M21 17.5l8 4.5-8 4.5z" fill="currentColor"/><path d="M24 38v-3M17 40h14"/></svg>
+    </span>
+    <strong data-i18n="dropTitle">Drop your PDF here</strong>
+    <span class="pill" data-i18n="chooseBtn">Choose file</span>
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+  </label>
+  <p class="privacy" data-i18n="privacy">Your file is never uploaded. Everything runs in your browser.</p>
+
+  <section class="features">
+    <div><h3 data-i18n="f1t">Click to advance</h3><p data-i18n="f1d">Left click goes forward, right click goes back. Just like PowerPoint.</p></div>
+    <div><h3 data-i18n="f2t">Pixel-faithful</h3><p data-i18n="f2d">Rendered at your screen's resolution with the original aspect ratio. No cropping, no distortion.</p></div>
+    <div><h3 data-i18n="f3t">Free forever</h3><p data-i18n="f3d">Open source, no ads, no tracking, no accounts. Works in every modern browser.</p></div>
+  </section>
+
+  <section class="keys" aria-label="Shortcuts">
+    <h2 data-i18n="keysTitle">Controls</h2>
+    <dl>
+      <div><dt><kbd>Click</kbd><kbd>→</kbd><kbd>Space</kbd></dt><dd data-i18n="kNext">Next page</dd></div>
+      <div><dt><kbd>Right click</kbd><kbd>←</kbd><kbd>⌫</kbd></dt><dd data-i18n="kPrev">Previous page</dd></div>
+      <div><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd data-i18n="kEnds">First / last page</dd></div>
+      <div><dt><kbd>1</kbd><kbd>2</kbd><kbd>↵</kbd></dt><dd data-i18n="kJump">Go to page 12</dd></div>
+      <div><dt><kbd>Z</kbd></dt><dd data-i18n="kAnim">Toggle transition animation</dd></div>
+      <div><dt><kbd>F</kbd></dt><dd data-i18n="kFull">Toggle fullscreen</dd></div>
+      <div><dt><kbd>B</kbd></dt><dd data-i18n="kBlack">Black out the screen</dd></div>
+      <div><dt><kbd>Esc</kbd></dt><dd data-i18n="kExit">Leave fullscreen</dd></div>
+    </dl>
+  </section>
+
+  <footer class="foot">
+    <span data-i18n="footer">Free and open source software.</span>
+    <a href="https://github.com/ufuayk/pdf" target="_blank" rel="noopener">github.com/ufuayk/pdf</a>
+  </footer>
+</main>
+
+<main id="show" class="show" hidden>
+  <div id="stage" class="stage"></div>
+  <div id="black" class="black" hidden></div>
+  <div id="progress" class="progress"><i></i></div>
+
+  <div id="hud" class="hud" role="toolbar">
+    <button type="button" data-act="prev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <span id="counter">1 / 1</span>
+    <button type="button" data-act="next" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <span class="sep"></span>
+    <button type="button" data-act="anim" id="animBtn" title="Transitions (Z)" aria-label="Toggle transitions"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg></button>
+    <button type="button" data-act="full" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <button type="button" data-act="help" title="Help (?)" aria-label="Help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 114 2c-.9.6-1.6 1.1-1.6 2.1M12 17h.01"/></svg></button>
+    <button type="button" data-act="close" title="Close (Esc)" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <div id="start" class="start" hidden>
+    <button type="button" id="startBtn" data-i18n="start">Start in fullscreen</button>
+  </div>
+
+  <div id="end" class="end" hidden>
+    <div class="end-card">
+      <svg class="end-logo" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#f5f5f7"/><rect x="11" y="20" width="42" height="24" rx="4" fill="none" stroke="#000" stroke-width="4"/><path d="M29 27l9 5-9 5z" fill="#000"/></svg>
+      <h1 data-i18n="endTitle">Thanks for using pdf&#8209;show</h1>
+      <p data-i18n="endText">No ads, no tracking, no accounts. pdf-show is free software kept alive by volunteer work. If you like it, star the project or say hi to the developer.</p>
+      <div class="end-links">
+        <a href="https://github.com/ufuayk/pdf" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://github.com/ufuayk" target="_blank" rel="noopener">ufuayk ↗</a>
+      </div>
+      <div class="end-actions">
+        <button type="button" data-act="replay" data-i18n="replay">Play again</button>
+        <button type="button" data-act="close" class="ghost" data-i18n="another">Open another PDF</button>
+      </div>
+      <small>MIT · PDF.js (Apache-2.0)</small>
+    </div>
+  </div>
+
+  <div id="help" class="help" hidden>
+    <div class="help-card" id="helpBody"></div>
+  </div>
+</main>
+
+<div id="drag" class="dragveil" hidden><span data-i18n="dragVeil">Drop to present</span></div>
+<div id="pass" class="pass" hidden>
+  <form id="passForm">
+    <label for="passInput" data-i18n="passLabel">This PDF is password protected</label>
+    <input id="passInput" type="password" autocomplete="off">
+    <button type="submit" data-i18n="passOk">Open</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js" crossorigin="anonymous"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
